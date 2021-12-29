@@ -37,6 +37,11 @@ li {
 .overview {
   margin-bottom: 20px;
 }
+.temperature {
+  display: inline-block;
+  position: relative;
+  bottom: -15px;
+}
 .weather-temperature img {
   margin-right: 5px;
   height: 64px;

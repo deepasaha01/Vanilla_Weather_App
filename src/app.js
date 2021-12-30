@@ -22,7 +22,6 @@ function formatDate(timestamp) {
 }
 
 function displayTemperature(response) {
-  console.log(response.data.main.temp);
   let temperatureElement = document.querySelector("#temperature");
   let cityElement = document.querySelector("#city");
   let descriptionElement = document.querySelector("#description");
@@ -56,6 +55,15 @@ function handleSubmit(event) {
   search(cityInputElement.value);
 }
 
+function currentLocation(position) {
+  let apiKey = "c6bf549ec646257615a2c5390e834788";
+  let apiUrlCurrent = `https://api.openweathermap.org/data/2.5/weather?lat=${position.coords.latitude}&lon=${position.coords.longitude}&appid=${apiKey}&units=metric`;
+  axios.get(apiUrlCurrent).then(displayTemperature);
+}
+function currentLocationTemperature(event) {
+  event.preventDefault();
+  navigator.geolocation.getCurrentPosition(currentLocation);
+}
 function displayFahrenheitTemperature(event) {
   event.preventDefault();
   celciusLink.classList.remove("active");
@@ -78,10 +86,13 @@ let celciusTemperature = null;
 let form = document.querySelector("#search-form");
 form.addEventListener("submit", handleSubmit);
 
+let currentButton = document.querySelector("#current");
+currentButton.addEventListener("click", currentLocationTemperature);
+
 let fahrenheitLink = document.querySelector("#fahrenheit-link");
 fahrenheitLink.addEventListener("click", displayFahrenheitTemperature);
 
 let celciusLink = document.querySelector("#celcius-link");
 celciusLink.addEventListener("click", displayCelciusTemperature);
 
-search("Tokyo");
+search("Fremont");

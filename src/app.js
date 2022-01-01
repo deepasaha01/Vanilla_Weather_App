@@ -1,15 +1,18 @@
 let celciusTemperature = null;
 let celciusTemperatureForecastResponse = null;
 
+let secInMinutes = 60;
+let millisecInSec = 1000;
+
 function formatDate(timezoneSeconds) {
   let now = new Date();
   let currentUnixTimestamp = now.getTime();
-  let currentTimezone = now.getTimezoneOffset() * 60000;
-  let utcTime = currentUnixTimestamp + currentTimezone;
+  let currentTimezone = now.getTimezoneOffset() * secInMinutes * millisecInSec;
+  let utcTimeMilliseconds = currentUnixTimestamp + currentTimezone;
 
-  let dateSecTargetCity = utcTime / 1000 + timezoneSeconds;
+  let dateSecTargetCity = utcTimeMilliseconds / 1000 + timezoneSeconds;
   let dateTargetCity = new Date(dateSecTargetCity * 1000);
-  console.log(dateTargetCity);
+  // console.log(dateTargetCity);
 
   let hours = dateTargetCity.getHours();
 

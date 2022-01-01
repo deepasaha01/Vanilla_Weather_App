@@ -47,7 +47,7 @@ function formatDay(timestampUTCSec, timezoneSeconds) {
 }
 
 function convertTemperatureUnit(temperatureCentigrade, targetUnit = "metric") {
-  if (targetUnit == "metric") {
+  if (targetUnit === "metric") {
     return temperatureCentigrade;
   } else {
     return Math.round((temperatureCentigrade * 9) / 5 + 32);
@@ -103,7 +103,6 @@ function getForecast(coordinates) {
   axios.get(apiUrl).then(displayForecast);
 }
 function displayTemperature(response) {
-  console.log(response);
   let temperatureElement = document.querySelector("#temperature");
   let cityElement = document.querySelector("#city");
   let descriptionElement = document.querySelector("#description");
@@ -113,6 +112,8 @@ function displayTemperature(response) {
   let iconElement = document.querySelector("#icon");
 
   celciusTemperature = response.data.main.temp;
+  fahrenheitLink.classList.remove("active");
+  celciusLink.classList.add("active");
 
   temperatureElement.innerHTML = Math.round(celciusTemperature);
   cityElement.innerHTML = response.data.name;
@@ -120,7 +121,6 @@ function displayTemperature(response) {
   humidityElement.innerHTML = response.data.main.humidity;
   windElement.innerHTML = Math.round(response.data.wind.speed);
   dayTimeElement.innerHTML = formatDate(response.data.timezone);
-  let weatherDescription = response.data.weather[0].description;
 
   iconElement.setAttribute(
     "src",

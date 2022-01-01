@@ -1,12 +1,22 @@
-function formatDate(timestamp) {
-  let date = new Date(timestamp);
+let celciusTemperature = null;
+let celciusTemperatureForecastResponse = null;
 
-  let hours = date.getHours();
+function formatDate(timezoneSeconds) {
+  let now = new Date();
+  let currentUnixTimestamp = now.getTime();
+  let currentTimezone = now.getTimezoneOffset() * 60000;
+  let utcTime = currentUnixTimestamp + currentTimezone;
+
+  let dateSecTargetCity = utcTime / 1000 + timezoneSeconds;
+  let dateTargetCity = new Date(dateSecTargetCity * 1000);
+  console.log(dateTargetCity);
+
+  let hours = dateTargetCity.getHours();
 
   if (hours < 10) {
     hours = `0${hours}`;
   }
-  let minutes = date.getMinutes();
+  let minutes = dateTargetCity.getMinutes();
 
   if (minutes < 10) {
     minutes = `0${minutes}`;
@@ -20,16 +30,34 @@ function formatDate(timestamp) {
     "Friday",
     "Saturday",
   ];
-  let day = days[date.getDay()];
+  let day = days[dateTargetCity.getDay()];
   return `${day}  ${hours}:${minutes}`;
 }
-function formatDay(timestamp) {
-  let date = new Date(timestamp * 1000);
-  let day = date.getDay();
+
+function formatDay(timestampUTCSec, timezoneSeconds) {
+  let dateSecTargetCity = timestampUTCSec + timezoneSeconds;
+  let dateTargetCity = new Date(dateSecTargetCity * 1000);
+
+  let day = dateTargetCity.getDay();
   let days = ["Sun", "Mon", "Tue", "Wed", "Thurs", "Fri", "Sat"];
   return days[day];
 }
-function displayForecast(response) {
+
+function convertTemperatureUnit(temperatureCentigrade, targetUnit = "metric") {
+  if (targetUnit == "metric") {
+    return temperatureCentigrade;
+  } else {
+    return Math.round((temperatureCentigrade * 9) / 5 + 32);
+  }
+}
+
+function displayForecast(response, unit = "metric") {
+  if (unit === "metric") {
+    // Save on first invocation, from axios.
+    // From then on, this is redundant.
+    celciusTemperatureForecastResponse = response;
+  }
+
   let forecast = response.data.daily;
 
   let forecastElement = document.querySelector("#forecast");
@@ -40,7 +68,8 @@ function displayForecast(response) {
         forecastHTML +
         ` <div class="col-2">
                 <div class="weather-forecast-date">${formatDay(
-                  forecastDay.dt
+                  forecastDay.dt,
+                  response.data.timezone_offset
                 )}</div>
                 <img
                   src="http://openweathermap.org/img/wn/${
@@ -51,10 +80,10 @@ function displayForecast(response) {
                 /><br />
                 <div class="weather-forecast-temperatures">
                   <span class="weather-forecast-temperature-max">${Math.round(
-                    forecastDay.temp.max
+                    convertTemperatureUnit(forecastDay.temp.max, unit)
                   )}°</span
                   ><span class="weather-forecast-temperature-min">${Math.round(
-                    forecastDay.temp.min
+                    convertTemperatureUnit(forecastDay.temp.min, unit)
                   )}°</span>
                 </div>
               </div>`;
@@ -71,12 +100,13 @@ function getForecast(coordinates) {
   axios.get(apiUrl).then(displayForecast);
 }
 function displayTemperature(response) {
+  console.log(response);
   let temperatureElement = document.querySelector("#temperature");
   let cityElement = document.querySelector("#city");
   let descriptionElement = document.querySelector("#description");
   let humidityElement = document.querySelector("#humidity");
   let windElement = document.querySelector("#wind");
-  let dateElement = document.querySelector("#date");
+  let dayTimeElement = document.querySelector("#day-time");
   let iconElement = document.querySelector("#icon");
 
   celciusTemperature = response.data.main.temp;
@@ -86,7 +116,8 @@ function displayTemperature(response) {
   descriptionElement.innerHTML = response.data.weather[0].description;
   humidityElement.innerHTML = response.data.main.humidity;
   windElement.innerHTML = Math.round(response.data.wind.speed);
-  dateElement.innerHTML = formatDate(response.data.dt * 1000);
+  dayTimeElement.innerHTML = formatDate(response.data.timezone);
+  let weatherDescription = response.data.weather[0].description;
 
   iconElement.setAttribute(
     "src",
@@ -118,6 +149,7 @@ function currentLocationTemperature(event) {
   event.preventDefault();
   navigator.geolocation.getCurrentPosition(currentLocation);
 }
+
 function displayFahrenheitTemperature(event) {
   event.preventDefault();
   celciusLink.classList.remove("active");
@@ -125,6 +157,8 @@ function displayFahrenheitTemperature(event) {
   let fahrenheitTemperature = Math.round((celciusTemperature * 9) / 5 + 32);
   let temperatureElement = document.querySelector("#temperature");
   temperatureElement.innerHTML = fahrenheitTemperature;
+
+  displayForecast(celciusTemperatureForecastResponse, "imperial");
 }
 
 function displayCelciusTemperature(event) {
@@ -133,9 +167,9 @@ function displayCelciusTemperature(event) {
   fahrenheitLink.classList.remove("active");
   let temperatureElement = document.querySelector("#temperature");
   temperatureElement.innerHTML = Math.round(celciusTemperature);
-}
 
-let celciusTemperature = null;
+  displayForecast(celciusTemperatureForecastResponse, "metric");
+}
 
 let form = document.querySelector("#search-form");
 form.addEventListener("submit", handleSubmit);
@@ -149,4 +183,4 @@ fahrenheitLink.addEventListener("click", displayFahrenheitTemperature);
 let celciusLink = document.querySelector("#celcius-link");
 celciusLink.addEventListener("click", displayCelciusTemperature);
 
-search("Fremont");
+search("Tokyo");

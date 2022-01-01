@@ -38,6 +38,10 @@ a {
 }
 
 .weather-app {
+  background-image: url("../Images/weather.jpg");
+  background-size: cover;
+  background-position: bottom;
+
   padding: 20px;
   border: 1px solid #dadde1;
   border-radius: 5px;
